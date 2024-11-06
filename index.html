@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session and Break Timer</title>
+    <style>
+        /* General Styling */
+        body {
+            background-color: #f0c987;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+
+        /* Timer Container */
+        .container {
+            background-color: #4a3d36;
+            color: #f1f1f1;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 250px;
+        }
+
+        /* Display */
+        #timerDisplay {
+            font-size: 3em;
+            color: #29a3a3;
+            padding: 20px;
+            background-color: #e3e3e3;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 3px solid #29a3a3;
+        }
+
+        /* Session/Break Label */
+        #sessionLabel {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        /* Time Adjustments */
+        .time-settings {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #ccc;
+        }
+
+        .time-settings div {
+            text-align: center;
+        }
+
+        .time-settings button {
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        .time-settings span {
+            display: block;
+            font-size: 1.2em;
+            color: #29a3a3;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .controls button {
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            width: 100px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="timerDisplay">20:00</div>
+    <div id="sessionLabel">Session 1</div>
+
+    <div class="time-settings">
+        <div>
+            <span id="sessionTime">20 min</span>
+            <p>session time</p>
+            <button onclick="adjustTime('session', -1)">-</button>
+            <button onclick="adjustTime('session', 1)">+</button>
+        </div>
+        <div>
+            <span id="breakTime">5 min</span>
+            <p>break time</p>
+            <button onclick="adjustTime('break', -1)">-</button>
+            <button onclick="adjustTime('break', 1)">+</button>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="pauseButton" onclick="toggleTimer()">Start</button>
+        <button onclick="resetTimer()">Reset</button>
+    </div>
+</div>
+
+<script>
+    // Initial variables
+    let sessionDuration = 20; // in minutes
+    let breakDuration = 5; // in minutes
+    let timeLeft = sessionDuration * 60; // in seconds
+    let isSession = true;
+    let timerInterval = null;
+    let isRunning = false;
+    let sessionCount = 1;
+
+    // DOM elements
+    const timerDisplay = document.getElementById('timerDisplay');
+    const sessionLabel = document.getElementById('sessionLabel');
+    const pauseButton = document.getElementById('pauseButton');
+    const sessionTimeDisplay = document.getElementById('sessionTime');
+    const breakTimeDisplay = document.getElementById('breakTime');
+
+    // Update Display
+    function updateDisplay() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        timerDisplay.textContent = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+
+    // Toggle Start/Pause
+    function toggleTimer() {
+        if (isRunning) {
+            clearInterval(timerInterval);
+            pauseButton.textContent = "Start";
+        } else {
+            timerInterval = setInterval(countdown, 1000);
+            pauseButton.textContent = "Pause";
+        }
+        isRunning = !isRunning;
+    }
+
+    // Countdown function
+    function countdown() {
+        if (timeLeft <= 0) {
+            isSession = !isSession;
+            timeLeft = (isSession ? sessionDuration : breakDuration) * 60;
+            sessionLabel.textContent = isSession ? `Session ${sessionCount++}` : "Break!";
+            sessionLabel.style.color = isSession ? "#f1f1f1" : "#fca47b";
+            timerDisplay.style.color = isSession ? "#29a3a3" : "#fca47b";
+        } else {
+            timeLeft--;
+            updateDisplay();
+        }
+    }
+
+    // Adjust time for session and break
+    function adjustTime(type, change) {
+        if (type === 'session') {
+            sessionDuration = Math.max(1, sessionDuration + change);
+            sessionTimeDisplay.textContent = `${sessionDuration} min`;
+            if (isSession && !isRunning) {
+                timeLeft = sessionDuration * 60;
+                updateDisplay();
+            }
+        } else if (type === 'break') {
+            breakDuration = Math.max(1, breakDuration + change);
+            breakTimeDisplay.textContent = `${breakDuration} min`;
+            if (!isSession && !isRunning) {
+                timeLeft = breakDuration * 60;
+                updateDisplay();
+            }
+        }
+    }
+
+    // Reset timer to initial settings
+    function resetTimer() {
+        clearInterval(timerInterval);
+        isRunning = false;
+        sessionCount = 1;
+        isSession = true;
+        timeLeft = sessionDuration * 60;
+        sessionLabel.textContent = `Session 1`;
+        timerDisplay.style.color = "#29a3a3";
+        pauseButton.textContent = "Start";
+        updateDisplay();
+    }
+
+    // Initial display update
+    updateDisplay();
+</script>
+
+</body>
+</html>
